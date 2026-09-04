@@ -1,66 +1,188 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <title>SentinelEdge — Public Preview</title>
-  <link rel="stylesheet" href="./styles.css?v=3" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SentinelEdge | Live IoT Operations Console</title>
+<style>
+  :root {
+    --bg: #050b14; --panel: #0f172a; --panel-2: #111827; --border: #1f2937;
+    --text: #e5e7eb; --muted: #94a3b8; --ok: #10b981; --warn: #f59e0b;
+    --critical: #ef4444; --info: #3b82f6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  header { position: sticky; top: 0; z-index: 100; background: rgba(5, 11, 20, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 16px 24px; }
+  h1 { font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+  h1::before { content: ''; display: inline-block; width: 10px; height: 10px; background: var(--ok); border-radius: 50%; box-shadow: 0 0 8px var(--ok); animation: pulse 2s infinite; }
+  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+  .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+  .card-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .card-value { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .ok { color: var(--ok); } .warn { color: var(--warn); } .critical { color: var(--critical); } .info { color: var(--info); } .muted { color: var(--muted); }
+  main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+  .console-title { font-size: 14px; color: var(--muted); margin-bottom: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .console-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .feed { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; height: 60vh; overflow-y: auto; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 13px; line-height: 1.6; }
+  .entry { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; gap: 12px; }
+  .tag { display: inline-block; min-width: 100px; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; text-transform: uppercase; text-align: center; border: 1px solid transparent; }
+  .tag.SYSTEM { background: rgba(59,130,246,0.15); color: var(--info); border-color: rgba(59,130,246,0.3); }
+  .tag.TELEMETRY { background: rgba(148,163,184,0.1); color: var(--muted); }
+  .tag.VALIDATION { background: rgba(245,158,11,0.15); color: var(--warn); border-color: rgba(245,158,11,0.3); }
+  .tag.ALERT { background: rgba(239,68,68,0.15); color: var(--critical); border-color: rgba(239,68,68,0.3); }
+  .tag.RULE { background: rgba(168,85,247,0.15); color: #c084fc; border-color: rgba(168,85,247,0.3); }
+  .tag.INCIDENT { background: rgba(239,68,68,0.2); color: #fca5a5; border-color: rgba(239,68,68,0.4); font-weight: 800; }
+  .tag.ESCALATION { background: rgba(245,158,11,0.2); color: #fcd34d; border-color: rgba(245,158,11,0.4); }
+  .tag.WORKORDER { background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.3); }
+  .tag.TWIN { background: rgba(16,185,129,0.15); color: var(--ok); border-color: rgba(16,185,129,0.3); }
+  .time { color: var(--muted); font-size: 11px; min-width: 80px; }
+  .msg { flex: 1; color: var(--text); }
+</style>
 </head>
 <body>
-  <header class="topbar">
-    <div>
-      <h1>SentinelEdge</h1>
-      <p>Hands-free industrial IoT safety, validation, rule, incident, storage, and digital-twin preview. Synthetic data only.</p>
-    </div>
-    <div class="status-pill" id="systemMode">DEMO LIVE</div>
-  </header>
+<header>
+  <h1>SentinelEdge Operations Console</h1>
+  <div class="subtitle">Hands-Free Live Demonstration | Industrial IoT Safety & Digital Twin Platform</div>
+  <div class="grid">
+    <div class="card"><div class="card-label">Platform Status</div><div class="card-value ok" id="mStatus">ONLINE</div></div>
+    <div class="card"><div class="card-label">Active Alerts</div><div class="card-value ok" id="mAlerts">0</div></div>
+    <div class="card"><div class="card-label">Open Incidents</div><div class="card-value ok" id="mIncidents">0</div></div>
+    <div class="card"><div class="card-label">Impacted Assets</div><div class="card-value ok" id="mImpacted">0</div></div>
+    <div class="card"><div class="card-label">Quarantined</div><div class="card-value muted" id="mQuarantined">0</div></div>
+    <div class="card"><div class="card-label">Avg MTTR</div><div class="card-value muted" id="mMTTR">0s</div></div>
+  </div>
+</header>
+<main>
+  <div class="console-title">Live Auto-Scrolling Event Feed (No interaction required)</div>
+  <div class="feed" id="feed"></div>
+</main>
+<script>
+  const state = {
+    online: true, alerts: [], incidents: [], pending: [],
+    pressure: 82, gas: 2, temp: 72, quarantined: 0, mttrTotal: 0, mttrCount: 0,
+    incId: 0, woId: 0, openInc: 0
+  };
 
-  <section class="metrics" id="metrics">
-    <div class="metric"><span>Connectivity</span><strong id="mConnectivity">ONLINE</strong></div>
-    <div class="metric"><span>Pressure</span><strong id="mPressure">--</strong></div>
-    <div class="metric"><span>Gas</span><strong id="mGas">--</strong></div>
-    <div class="metric"><span>Temperature</span><strong id="mTemperature">--</strong></div>
-    <div class="metric"><span>Vibration</span><strong id="mVibration">--</strong></div>
-    <div class="metric"><span>Accepted</span><strong id="mAccepted">0</strong></div>
-    <div class="metric"><span>Quarantined</span><strong id="mQuarantined">0</strong></div>
-    <div class="metric"><span>Buffered</span><strong id="mBuffered">0</strong></div>
-    <div class="metric"><span>Active Alerts</span><strong id="mAlerts">0</strong></div>
-    <div class="metric"><span>Open Incidents</span><strong id="mOpenIncidents">0</strong></div>
-    <div class="metric"><span>Work Orders</span><strong id="mWorkOrders">0</strong></div>
-    <div class="metric"><span>Avg MTTR</span><strong id="mMTTR">0s</strong></div>
-    <div class="metric"><span>Rules Triggered</span><strong id="mRulesTriggered">0</strong></div>
-    <div class="metric"><span>Suppressed</span><strong id="mSuppressed">0</strong></div>
-    <div class="metric"><span>Hot Storage</span><strong id="mHot">0</strong></div>
-    <div class="metric"><span>Warm Storage</span><strong id="mWarm">0</strong></div>
-    <div class="metric"><span>Cold Storage</span><strong id="mCold">0</strong></div>
-    <div class="metric"><span>Twin Impact</span><strong id="mTwinImpact">0</strong></div>
-    <div class="metric"><span>Isolation</span><strong id="mIsolation">0</strong></div>
-  </section>
+  function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function time() { return new Date().toLocaleTimeString('en-US', {hour12:false}); }
+  function rnd(min, max) { return Math.random() * (max - min) + min; }
 
-  <main class="layout">
-    <section class="panel wide">
-      <div class="panel-title">Auto-Scrolling Operations Console</div>
-      <div class="feed" id="feed"></div>
-    </section>
+  function log(tag, msg, cls) {
+    const f = document.getElementById('feed');
+    const e = document.createElement('div');
+    e.className = 'entry';
+    e.innerHTML = `<span class="tag ${tag}">${tag}</span><span class="time">${time()}</span><span class="msg ${cls||''}">${esc(msg)}</span>`;
+    f.appendChild(e);
+    while(f.children.length > 200) f.removeChild(f.firstChild);
+    f.scrollTop = f.scrollHeight;
+  }
 
-    <aside class="panel side">
-      <div class="panel-title">Current Asset State</div>
-      <div class="asset-map">
-        <div class="asset" id="assetArea">Process Area 3</div>
-        <div class="asset" id="assetSep">Separator 2</div>
-        <div class="asset" id="assetComp">Compressor 1</div>
-        <div class="asset" id="assetFlare">Flare System</div>
-        <div class="asset" id="assetValve">ESDV-201</div>
-      </div>
-      <div class="panel-title mt">Layer Coverage</div>
-      <ul class="coverage">
-        <li>Telemetry ingestion</li><li>Validation/quarantine</li><li>Explainable rules</li><li>Maintenance suppression</li><li>Incident workflow</li><li>Storage tiering</li><li>Replay/backfill</li><li>Digital twin impact</li><li>Audit trail</li>
-      </ul>
-    </aside>
-  </main>
+  function updateMetrics() {
+    const aa = state.alerts.filter(a=>a.status==='active').length;
+    document.getElementById('mAlerts').textContent = aa;
+    document.getElementById('mAlerts').className = 'card-value ' + (aa>0?'critical':'ok');
+    
+    document.getElementById('mIncidents').textContent = state.openInc;
+    document.getElementById('mIncidents').className = 'card-value ' + (state.openInc>0?'critical':'ok');
+    
+    document.getElementById('mQuarantined').textContent = state.quarantined;
+    document.getElementById('mMTTR').textContent = state.mttrCount > 0 ? Math.round(state.mttrTotal/state.mttrCount) + 's' : '0s';
+  }
 
-  <footer>Public preview repository: sentinel-edge-preview. Private source repository: sentinel-edge.</footer>
-  <script src="./app.js?v=3"></script>
+  function addAlert(sev, cat, msg) {
+    if(state.alerts.some(a=>a.cat===cat && a.status==='active')) return;
+    const a = {id: Math.random(), cat, sev, msg, status:'active', exp: Date.now()+15000};
+    state.alerts.unshift(a);
+    log('ALERT', `[${sev.toUpperCase()}] ${cat}: ${msg}`, sev==='critical'?'critical':'warn');
+    if(sev==='critical' || sev==='high') schedule(2000, ()=>createIncident(a));
+  }
+
+  function createIncident(a) {
+    if(state.incidents.some(i=>i.cat===a.cat && i.status!=='resolved')) return;
+    state.incId++;
+    const id = 'INC-' + String(state.incId).padStart(3,'0');
+    const i = {id, cat:a.cat, status:'created', start:Date.now()};
+    state.incidents.unshift(i);
+    state.openInc++;
+    log('INCIDENT', `Created ${id} for ${a.cat} | Escalation timer started`);
+    schedule(3000, ()=>escalate(i));
+    schedule(5000, ()=>acknowledge(i));
+    schedule(7000, ()=>workOrder(i));
+    schedule(12000, ()=>resolve(i));
+  }
+
+  function escalate(i) { if(i.status==='created') { i.status='escalated'; log('ESCALATION', `${i.id} breached SLA | Notifying On-Call Supervisor`, 'warn'); } }
+  function acknowledge(i) { if(i.status!=='resolved') { i.status='acknowledged'; log('INCIDENT', `Operator ACKNOWLEDGED ${i.id}`, 'ok'); } }
+  function workOrder(i) { 
+    if(i.status!=='resolved') { 
+      state.woId++; i.status='work_order'; 
+      log('WORKORDER', `WO-${state.woId} dispatched to maintenance team for ${i.id}`, 'info'); 
+    } 
+  }
+  function resolve(i) { 
+    if(i.status!=='resolved') { 
+      i.status='resolved'; state.openInc--; 
+      const dur = Math.round((Date.now()-i.start)/1000); 
+      state.mttrTotal += dur; state.mttrCount++; 
+      log('INCIDENT', `RESOLVED ${i.id} | Duration: ${dur}s | Post-incident review scheduled`, 'ok'); 
+    } 
+  }
+
+  function schedule(ms, fn) { setTimeout(fn, ms); }
+
+  function evaluateTwin() {
+    let impacted = [];
+    if(state.gas >= 25 || state.alerts.some(a=>a.cat==='gas_detection' && a.status==='active')) impacted.push('Separator-2', 'Flare-System');
+    if(state.pressure >= 150 || state.alerts.some(a=>a.cat==='pressure' && a.status==='active')) impacted.push('Inlet-Valve', 'Compressor-1');
+    
+    const unique = [...new Set(impacted)];
+    document.getElementById('mImpacted').textContent = unique.length;
+    document.getElementById('mImpacted').className = 'card-value ' + (unique.length>0?'critical':'ok');
+    
+    if(unique.length > 0) {
+      log('TWIN', `Impact Propagation detected: ${unique.join(', ')} | Recommending isolation`, 'warn');
+    }
+  }
+
+  function tick() {
+    state.alerts.forEach(a => { if(a.status==='active' && Date.now()>a.exp) a.status='resolved'; });
+    
+    if(state.online) {
+      state.pressure = Math.max(0, state.pressure + rnd(-2, 2));
+      state.gas = Math.max(0, state.gas + rnd(-0.5, 0.5));
+      state.temp = Math.max(0, state.temp + rnd(-1, 1));
+      
+      log('TELEMETRY', `PT-101: ${state.pressure.toFixed(1)} bar | GT-201: ${state.gas.toFixed(1)} %LEL | TT-301: ${state.temp.toFixed(1)} C`);
+      
+      if(state.gas >= 25) addAlert('critical', 'gas_detection', 'High gas concentration detected in Zone 3');
+      if(state.pressure >= 150) addAlert('high', 'pressure', 'High pressure threshold exceeded');
+      
+      evaluateTwin();
+    } else {
+      log('SYSTEM', 'Network partition active | Edge gateway buffering telemetry locally', 'warn');
+    }
+    updateMetrics();
+  }
+
+  function runScenario(s) {
+    log('SYSTEM', `--- Injecting Scenario: ${s} ---`, 'info');
+    if(s === 'Gas Leak') state.gas = 35;
+    if(s === 'Pressure Spike') state.pressure = 180;
+    if(s === 'Bad Quality') { state.quarantined++; log('VALIDATION', 'Quarantined payload from PT-105 | Reason: Out of physical range (2500 bar)', 'warn'); }
+    if(s === 'Network Outage') state.online = false;
+    if(s === 'Network Restore') { state.online = true; log('SYSTEM', 'Network restored | Replaying 142 buffered messages', 'ok'); }
+  }
+
+  const scenarios = ['Normal', 'Normal', 'Gas Leak', 'Normal', 'Bad Quality', 'Normal', 'Pressure Spike', 'Network Outage', 'Network Restore'];
+  let sIdx = 0;
+
+  log('SYSTEM', 'SentinelEdge Platform initialized. Connecting to MQTT broker...', 'ok');
+  log('SYSTEM', 'Digital Twin topology loaded. 18 assets mapped.', 'ok');
+  
+  setInterval(tick, 2500);
+  setInterval(() => { runScenario(scenarios[sIdx]); sIdx = (sIdx + 1) % scenarios.length; }, 8000);
+</script>
 </body>
 </html>
