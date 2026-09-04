@@ -1,69 +1,250 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SentinelEdge | Live IoT Operations Console</title>
+<title>SentinelEdge | Industrial IoT Platform</title>
 <style>
-  :root {
-    --bg: #050b14; --panel: #0f172a; --panel-2: #111827; --border: #1f2937;
-    --text: #e5e7eb; --muted: #94a3b8; --ok: #10b981; --warn: #f59e0b;
-    --critical: #ef4444; --info: #3b82f6;
+  :root[data-theme="dark"] {
+    --bg: #0a0f1c; --bg-alt: #111827; --panel: #1a2235; --border: #2d3748;
+    --text: #f1f5f9; --text-muted: #94a3b8; --primary: #3b82f6; --primary-hover: #2563eb;
+    --accent: #10b981; --danger: #ef4444; --warn: #f59e0b;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
   }
+  :root[data-theme="light"] {
+    --bg: #f8fafc; --bg-alt: #ffffff; --panel: #ffffff; --border: #e2e8f0;
+    --text: #0f172a; --text-muted: #64748b; --primary: #2563eb; --primary-hover: #1d4ed8;
+    --accent: #059669; --danger: #dc2626; --warn: #d97706;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-  header { position: sticky; top: 0; z-index: 100; background: rgba(5, 11, 20, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 16px 24px; }
-  h1 { font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-  h1::before { content: ''; display: inline-block; width: 10px; height: 10px; background: var(--ok); border-radius: 50%; box-shadow: 0 0 8px var(--ok); animation: pulse 2s infinite; }
-  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-  .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 16px; }
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
-  .card-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-  .card-value { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .ok { color: var(--ok); } .warn { color: var(--warn); } .critical { color: var(--critical); } .info { color: var(--info); } .muted { color: var(--muted); }
-  main { padding: 24px; max-width: 1400px; margin: 0 auto; }
-  .console-title { font-size: 14px; color: var(--muted); margin-bottom: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  body { 
+    background: var(--bg); color: var(--text); 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    transition: background 0.3s, color 0.3s;
+    min-height: 100vh;
+  }
+
+  /* --- Navigation --- */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--bg-alt); border-bottom: 1px solid var(--border);
+    padding: 12px 32px; display: flex; justify-content: space-between; align-items: center;
+    backdrop-filter: blur(8px);
+  }
+  .logo { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .logo-dot { width: 12px; height: 12px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-link { color: var(--text-muted); text-decoration: none; font-weight: 500; font-size: 14px; cursor: pointer; transition: color 0.2s; }
+  .nav-link:hover { color: var(--text); }
+  .theme-toggle { background: none; border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  
+  /* --- Layouts --- */
+  .view { display: none; animation: fadeIn 0.4s ease; }
+  .view.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* --- Landing Page --- */
+  .hero {
+    min-height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; padding: 64px 24px;
+    background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15), transparent 60%);
+  }
+  .hero h1 { font-size: 56px; font-weight: 800; line-height: 1.1; margin-bottom: 24px; max-width: 800px; background: linear-gradient(135deg, var(--text) 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { font-size: 20px; color: var(--text-muted); max-width: 600px; margin-bottom: 40px; line-height: 1.6; }
+  .btn {
+    padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; border: none;
+    transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+  .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+  .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  
+  .features {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;
+    padding: 64px 10%; max-width: 1200px; margin: 0 auto;
+  }
+  .feature-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 32px;
+    box-shadow: var(--shadow); transition: transform 0.2s;
+  }
+  .feature-card:hover { transform: translateY(-4px); border-color: var(--primary); }
+  .feature-icon { font-size: 32px; margin-bottom: 16px; }
+  .feature-card h3 { font-size: 20px; margin-bottom: 12px; }
+  .feature-card p { color: var(--text-muted); line-height: 1.6; font-size: 15px; }
+
+  /* --- Login Page --- */
+  .auth-container {
+    min-height: calc(100vh - 65px); display: flex; justify-content: center; align-items: center; padding: 24px;
+  }
+  .auth-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 48px;
+    width: 100%; max-width: 420px; box-shadow: var(--shadow);
+  }
+  .auth-card h2 { font-size: 28px; margin-bottom: 8px; }
+  .auth-card p { color: var(--text-muted); margin-bottom: 32px; }
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
+  .form-group input {
+    width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-size: 15px; outline: none; transition: border 0.2s;
+  }
+  .form-group input:focus { border-color: var(--primary); }
+  .btn-full { width: 100%; justify-content: center; }
+
+  /* --- Dashboard Shell --- */
+  .dash-layout { display: flex; min-height: calc(100vh - 65px); }
+  .sidebar {
+    width: 240px; background: var(--bg-alt); border-right: 1px solid var(--border); padding: 24px 0;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .sidebar-item {
+    padding: 12px 24px; color: var(--text-muted); font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 12px;
+    border-left: 3px solid transparent; transition: all 0.2s;
+  }
+  .sidebar-item:hover, .sidebar-item.active { background: rgba(59, 130, 246, 0.1); color: var(--primary); border-left-color: var(--primary); }
+  .main-content { flex: 1; padding: 32px; overflow-y: auto; background: var(--bg); }
+
+  /* --- Dashboard Console (from previous build) --- */
+  .dash-header { margin-bottom: 24px; }
+  .dash-header h2 { font-size: 24px; margin-bottom: 8px; }
+  .dash-header p { color: var(--text-muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; box-shadow: var(--shadow); }
+  .card-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .card-value { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .ok { color: var(--accent); } .warn { color: var(--warn); } .critical { color: var(--danger); } .info { color: var(--primary); } .muted { color: var(--text-muted); }
+  
+  .console-title { font-size: 14px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
   .console-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .feed { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; height: 60vh; overflow-y: auto; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 13px; line-height: 1.6; }
-  .entry { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; gap: 12px; }
-  .tag { display: inline-block; min-width: 100px; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; text-transform: uppercase; text-align: center; border: 1px solid transparent; }
-  .tag.SYSTEM { background: rgba(59,130,246,0.15); color: var(--info); border-color: rgba(59,130,246,0.3); }
-  .tag.TELEMETRY { background: rgba(148,163,184,0.1); color: var(--muted); }
-  .tag.VALIDATION { background: rgba(245,158,11,0.15); color: var(--warn); border-color: rgba(245,158,11,0.3); }
-  .tag.ALERT { background: rgba(239,68,68,0.15); color: var(--critical); border-color: rgba(239,68,68,0.3); }
-  .tag.RULE { background: rgba(168,85,247,0.15); color: #c084fc; border-color: rgba(168,85,247,0.3); }
-  .tag.INCIDENT { background: rgba(239,68,68,0.2); color: #fca5a5; border-color: rgba(239,68,68,0.4); font-weight: 800; }
-  .tag.ESCALATION { background: rgba(245,158,11,0.2); color: #fcd34d; border-color: rgba(245,158,11,0.4); }
-  .tag.WORKORDER { background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.3); }
-  .tag.TWIN { background: rgba(16,185,129,0.15); color: var(--ok); border-color: rgba(16,185,129,0.3); }
-  .time { color: var(--muted); font-size: 11px; min-width: 80px; }
+  .feed { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; height: 55vh; overflow-y: auto; font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px; line-height: 1.6; }
+  .entry { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; gap: 12px; align-items: flex-start; }
+  .tag { display: inline-block; min-width: 90px; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 10px; text-transform: uppercase; text-align: center; }
+  .tag.SYSTEM { background: rgba(59,130,246,0.15); color: var(--primary); }
+  .tag.TELEMETRY { background: rgba(148,163,184,0.1); color: var(--text-muted); }
+  .tag.ALERT { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .tag.INCIDENT { background: rgba(239,68,68,0.2); color: var(--danger); font-weight: 800; }
+  .tag.TWIN { background: rgba(16,185,129,0.15); color: var(--accent); }
+  .time { color: var(--text-muted); font-size: 11px; min-width: 70px; padding-top: 2px; }
   .msg { flex: 1; color: var(--text); }
+
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 36px; }
+    .sidebar { display: none; }
+    nav { padding: 12px 16px; }
+    .nav-links { gap: 12px; }
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>SentinelEdge Operations Console</h1>
-  <div class="subtitle">Hands-Free Live Demonstration | Industrial IoT Safety & Digital Twin Platform</div>
-  <div class="grid">
-    <div class="card"><div class="card-label">Platform Status</div><div class="card-value ok" id="mStatus">ONLINE</div></div>
-    <div class="card"><div class="card-label">Active Alerts</div><div class="card-value ok" id="mAlerts">0</div></div>
-    <div class="card"><div class="card-label">Open Incidents</div><div class="card-value ok" id="mIncidents">0</div></div>
-    <div class="card"><div class="card-label">Impacted Assets</div><div class="card-value ok" id="mImpacted">0</div></div>
-    <div class="card"><div class="card-label">Quarantined</div><div class="card-value muted" id="mQuarantined">0</div></div>
-    <div class="card"><div class="card-label">Avg MTTR</div><div class="card-value muted" id="mMTTR">0s</div></div>
+
+  <nav>
+    <div class="logo">
+      <div class="logo-dot"></div>
+      SentinelEdge
+    </div>
+    <div class="nav-links">
+      <span class="nav-link" onclick="navigate('landing')">Home</span>
+      <span class="nav-link" onclick="navigate('login')">Login</span>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <span id="theme-icon">🌙</span> Theme
+      </button>
+    </div>
+  </nav>
+
+  <div id="view-landing" class="view active">
+    <div class="hero">
+      <h1>Next-Gen Industrial IoT Safety & Digital Twin Platform</h1>
+      <p>Protect your offshore and heavy industrial assets with real-time AI anomaly detection, predictive maintenance, and automated incident response.</p>
+      <div style="display: flex; gap: 16px;">
+        <button class="btn btn-primary" onclick="navigate('login')">Enter Console →</button>
+        <button class="btn btn-secondary" onclick="navigate('landing')">Learn More</button>
+      </div>
+    </div>
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">📡</div>
+        <h3>Real-Time Telemetry</h3>
+        <p>Ingest millions of sensor readings per second with edge buffering and automatic data validation.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧬</div>
+        <h3>Digital Twin</h3>
+        <p>Map physical assets to a live digital topology to visualize impact propagation and isolation candidates.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>Predictive Safety</h3>
+        <p>Move from reactive alarms to proactive incident workflows with automated escalation and work orders.</p>
+      </div>
+    </div>
   </div>
-</header>
-<main>
-  <div class="console-title">Live Auto-Scrolling Event Feed (No interaction required)</div>
-  <div class="feed" id="feed"></div>
-</main>
+
+  <div id="view-login" class="view">
+    <div class="auth-container">
+      <div class="auth-card">
+        <h2>Welcome back</h2>
+        <p>Please enter your credentials to access the Operations Console.</p>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" placeholder="admin@sentineledge.io" value="admin@sentineledge.io">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" placeholder="••••••••" value="demo-password">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="navigate('dashboard')">Sign In to Console</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-dashboard" class="view">
+    <div class="dash-layout">
+      <div class="sidebar">
+        <div class="sidebar-item active">📊 Overview</div>
+        <div class="sidebar-item">🚨 Active Alerts</div>
+        <div class="sidebar-item">🏭 Assets & Twin</div>
+        <div class="sidebar-item">📋 Work Orders</div>
+        <div class="sidebar-item">⚙️ Settings</div>
+      </div>
+      <div class="main-content">
+        <div class="dash-header">
+          <h2>Operations Overview</h2>
+          <p>Live monitoring of offshore platform Alpha. Auto-scrolling feed active.</p>
+        </div>
+        <div class="grid">
+          <div class="card"><div class="card-label">Status</div><div class="card-value ok" id="mStatus">ONLINE</div></div>
+          <div class="card"><div class="card-label">Active Alerts</div><div class="card-value ok" id="mAlerts">0</div></div>
+          <div class="card"><div class="card-label">Open Incidents</div><div class="card-value ok" id="mIncidents">0</div></div>
+          <div class="card"><div class="card-label">Impacted Assets</div><div class="card-value ok" id="mImpacted">0</div></div>
+          <div class="card"><div class="card-label">Quarantined</div><div class="card-value muted" id="mQuarantined">0</div></div>
+          <div class="card"><div class="card-label">Avg MTTR</div><div class="card-value muted" id="mMTTR">0s</div></div>
+        </div>
+        <div class="console-title">Live Event Feed</div>
+        <div class="feed" id="feed"></div>
+      </div>
+    </div>
+  </div>
+
 <script>
-  const state = {
-    online: true, alerts: [], incidents: [], pending: [],
-    pressure: 82, gas: 2, temp: 72, quarantined: 0, mttrTotal: 0, mttrCount: 0,
-    incId: 0, woId: 0, openInc: 0
-  };
+  // --- UI & Routing ---
+  function navigate(viewId) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + viewId).classList.add('active');
+    if(viewId === 'dashboard') startEngine();
+  }
+
+  function toggleTheme() {
+    const html = document.documentElement;
+    const current = html.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    document.getElementById('theme-icon').textContent = next === 'dark' ? '🌙' : '☀️';
+  }
+
+  // --- Dashboard Engine ---
+  const state = { online: true, alerts: [], pressure: 82, gas: 2, temp: 72, quarantined: 0, mttrTotal: 0, mttrCount: 0, incId: 0, openInc: 0, running: false };
 
   function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function time() { return new Date().toLocaleTimeString('en-US', {hour12:false}); }
@@ -71,24 +252,23 @@
 
   function log(tag, msg, cls) {
     const f = document.getElementById('feed');
+    if(!f) return;
     const e = document.createElement('div');
     e.className = 'entry';
     e.innerHTML = `<span class="tag ${tag}">${tag}</span><span class="time">${time()}</span><span class="msg ${cls||''}">${esc(msg)}</span>`;
     f.appendChild(e);
-    while(f.children.length > 200) f.removeChild(f.firstChild);
+    while(f.children.length > 100) f.removeChild(f.firstChild);
     f.scrollTop = f.scrollHeight;
   }
 
   function updateMetrics() {
     const aa = state.alerts.filter(a=>a.status==='active').length;
-    document.getElementById('mAlerts').textContent = aa;
-    document.getElementById('mAlerts').className = 'card-value ' + (aa>0?'critical':'ok');
-    
-    document.getElementById('mIncidents').textContent = state.openInc;
-    document.getElementById('mIncidents').className = 'card-value ' + (state.openInc>0?'critical':'ok');
-    
-    document.getElementById('mQuarantined').textContent = state.quarantined;
-    document.getElementById('mMTTR').textContent = state.mttrCount > 0 ? Math.round(state.mttrTotal/state.mttrCount) + 's' : '0s';
+    const el = id => document.getElementById(id);
+    if(!el('mAlerts')) return;
+    el('mAlerts').textContent = aa; el('mAlerts').className = 'card-value ' + (aa>0?'critical':'ok');
+    el('mIncidents').textContent = state.openInc; el('mIncidents').className = 'card-value ' + (state.openInc>0?'critical':'ok');
+    el('mQuarantined').textContent = state.quarantined;
+    el('mMTTR').textContent = state.mttrCount > 0 ? Math.round(state.mttrTotal/state.mttrCount) + 's' : '0s';
   }
 
   function addAlert(sev, cat, msg) {
@@ -96,93 +276,63 @@
     const a = {id: Math.random(), cat, sev, msg, status:'active', exp: Date.now()+15000};
     state.alerts.unshift(a);
     log('ALERT', `[${sev.toUpperCase()}] ${cat}: ${msg}`, sev==='critical'?'critical':'warn');
-    if(sev==='critical' || sev==='high') schedule(2000, ()=>createIncident(a));
+    if(sev==='critical' || sev==='high') setTimeout(()=>createIncident(a), 2000);
   }
 
   function createIncident(a) {
-    if(state.incidents.some(i=>i.cat===a.cat && i.status!=='resolved')) return;
     state.incId++;
     const id = 'INC-' + String(state.incId).padStart(3,'0');
-    const i = {id, cat:a.cat, status:'created', start:Date.now()};
-    state.incidents.unshift(i);
     state.openInc++;
     log('INCIDENT', `Created ${id} for ${a.cat} | Escalation timer started`);
-    schedule(3000, ()=>escalate(i));
-    schedule(5000, ()=>acknowledge(i));
-    schedule(7000, ()=>workOrder(i));
-    schedule(12000, ()=>resolve(i));
+    setTimeout(()=>log('INCIDENT', `Operator ACKNOWLEDGED ${id}`, 'ok'), 4000);
+    setTimeout(()=>{ state.openInc--; log('INCIDENT', `RESOLVED ${id} | Duration: 12s`, 'ok'); }, 10000);
   }
-
-  function escalate(i) { if(i.status==='created') { i.status='escalated'; log('ESCALATION', `${i.id} breached SLA | Notifying On-Call Supervisor`, 'warn'); } }
-  function acknowledge(i) { if(i.status!=='resolved') { i.status='acknowledged'; log('INCIDENT', `Operator ACKNOWLEDGED ${i.id}`, 'ok'); } }
-  function workOrder(i) { 
-    if(i.status!=='resolved') { 
-      state.woId++; i.status='work_order'; 
-      log('WORKORDER', `WO-${state.woId} dispatched to maintenance team for ${i.id}`, 'info'); 
-    } 
-  }
-  function resolve(i) { 
-    if(i.status!=='resolved') { 
-      i.status='resolved'; state.openInc--; 
-      const dur = Math.round((Date.now()-i.start)/1000); 
-      state.mttrTotal += dur; state.mttrCount++; 
-      log('INCIDENT', `RESOLVED ${i.id} | Duration: ${dur}s | Post-incident review scheduled`, 'ok'); 
-    } 
-  }
-
-  function schedule(ms, fn) { setTimeout(fn, ms); }
 
   function evaluateTwin() {
     let impacted = [];
-    if(state.gas >= 25 || state.alerts.some(a=>a.cat==='gas_detection' && a.status==='active')) impacted.push('Separator-2', 'Flare-System');
-    if(state.pressure >= 150 || state.alerts.some(a=>a.cat==='pressure' && a.status==='active')) impacted.push('Inlet-Valve', 'Compressor-1');
-    
+    if(state.gas >= 25 || state.alerts.some(a=>a.cat==='gas_detection' && a.status==='active')) impacted.push('Separator-2', 'Flare');
+    if(state.pressure >= 150 || state.alerts.some(a=>a.cat==='pressure' && a.status==='active')) impacted.push('Inlet-Valve');
     const unique = [...new Set(impacted)];
-    document.getElementById('mImpacted').textContent = unique.length;
-    document.getElementById('mImpacted').className = 'card-value ' + (unique.length>0?'critical':'ok');
-    
-    if(unique.length > 0) {
-      log('TWIN', `Impact Propagation detected: ${unique.join(', ')} | Recommending isolation`, 'warn');
+    const el = document.getElementById('mImpacted');
+    if(el) {
+      el.textContent = unique.length;
+      el.className = 'card-value ' + (unique.length>0?'critical':'ok');
     }
+    if(unique.length > 0) log('TWIN', `Impact Propagation: ${unique.join(', ')} | Recommending isolation`, 'warn');
   }
 
   function tick() {
+    if(!state.running) return;
     state.alerts.forEach(a => { if(a.status==='active' && Date.now()>a.exp) a.status='resolved'; });
-    
-    if(state.online) {
-      state.pressure = Math.max(0, state.pressure + rnd(-2, 2));
-      state.gas = Math.max(0, state.gas + rnd(-0.5, 0.5));
-      state.temp = Math.max(0, state.temp + rnd(-1, 1));
-      
-      log('TELEMETRY', `PT-101: ${state.pressure.toFixed(1)} bar | GT-201: ${state.gas.toFixed(1)} %LEL | TT-301: ${state.temp.toFixed(1)} C`);
-      
-      if(state.gas >= 25) addAlert('critical', 'gas_detection', 'High gas concentration detected in Zone 3');
-      if(state.pressure >= 150) addAlert('high', 'pressure', 'High pressure threshold exceeded');
-      
-      evaluateTwin();
-    } else {
-      log('SYSTEM', 'Network partition active | Edge gateway buffering telemetry locally', 'warn');
-    }
+    state.pressure = Math.max(0, state.pressure + rnd(-2, 2));
+    state.gas = Math.max(0, state.gas + rnd(-0.5, 0.5));
+    state.temp = Math.max(0, state.temp + rnd(-1, 1));
+    log('TELEMETRY', `PT-101: ${state.pressure.toFixed(1)} bar | GT-201: ${state.gas.toFixed(1)} %LEL | TT-301: ${state.temp.toFixed(1)} C`);
+    if(state.gas >= 25) addAlert('critical', 'gas_detection', 'High gas concentration in Zone 3');
+    if(state.pressure >= 150) addAlert('high', 'pressure', 'High pressure threshold exceeded');
+    evaluateTwin();
     updateMetrics();
   }
 
   function runScenario(s) {
+    if(!state.running) return;
     log('SYSTEM', `--- Injecting Scenario: ${s} ---`, 'info');
     if(s === 'Gas Leak') state.gas = 35;
     if(s === 'Pressure Spike') state.pressure = 180;
-    if(s === 'Bad Quality') { state.quarantined++; log('VALIDATION', 'Quarantined payload from PT-105 | Reason: Out of physical range (2500 bar)', 'warn'); }
-    if(s === 'Network Outage') state.online = false;
-    if(s === 'Network Restore') { state.online = true; log('SYSTEM', 'Network restored | Replaying 142 buffered messages', 'ok'); }
+    if(s === 'Bad Quality') { state.quarantined++; log('VALIDATION', 'Quarantined payload from PT-105 | Out of range', 'warn'); }
   }
 
-  const scenarios = ['Normal', 'Normal', 'Gas Leak', 'Normal', 'Bad Quality', 'Normal', 'Pressure Spike', 'Network Outage', 'Network Restore'];
+  const scenarios = ['Normal', 'Normal', 'Gas Leak', 'Normal', 'Bad Quality', 'Normal', 'Pressure Spike', 'Normal'];
   let sIdx = 0;
 
-  log('SYSTEM', 'SentinelEdge Platform initialized. Connecting to MQTT broker...', 'ok');
-  log('SYSTEM', 'Digital Twin topology loaded. 18 assets mapped.', 'ok');
-  
-  setInterval(tick, 2500);
-  setInterval(() => { runScenario(scenarios[sIdx]); sIdx = (sIdx + 1) % scenarios.length; }, 8000);
+  function startEngine() {
+    if(state.running) return;
+    state.running = true;
+    log('SYSTEM', 'SentinelEdge Platform initialized. Connecting to MQTT broker...', 'ok');
+    log('SYSTEM', 'Digital Twin topology loaded. 18 assets mapped.', 'ok');
+    setInterval(tick, 2500);
+    setInterval(() => { runScenario(scenarios[sIdx]); sIdx = (sIdx + 1) % scenarios.length; }, 8000);
+  }
 </script>
 </body>
 </html>
