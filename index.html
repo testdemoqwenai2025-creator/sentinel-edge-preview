@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head><title>SentinelEdge Preview</title>
+<style>body{background:#050b14;color:#e5e7eb;font-family:sans-serif;padding:20px;} .feed{background:#0f172a;padding:15px;border-radius:8px;font-family:monospace;}</style>
+</head>
+<body>
+<h1>SentinelEdge Auto-Scroll Preview</h1>
+<p>Live demonstration of IoT safety platform.</p>
+<div class="feed" id="feed">Initializing...</div>
+<script>
+const feed = document.getElementById('feed');
+let count = 0;
+setInterval(() => {
+  count++;
+  const msg = `[${new Date().toISOString()}] TELEMETRY | PT-101=${(80+Math.random()*5).toFixed(2)} bar | Status: OK`;
+  feed.innerHTML += `<div>${msg}</div>`;
+  window.scrollTo(0, document.body.scrollHeight);
+}, 2000);
+</script>
+</body>
+</html>
