@@ -3,188 +3,64 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SentinelEdge Auto-Scroll Preview</title>
-  <style>
-    :root {
-      --bg: #050b14; --panel: #0f172a; --panel-2: #111827; --border: #1f2937;
-      --text: #e5e7eb; --muted: #94a3b8; --ok: #34d399; --warn: #fbbf24;
-      --critical: #f87171; --info: #60a5fa;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: auto; }
-    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); }
-    header { position: sticky; top: 0; z-index: 20; background: rgba(5, 11, 20, 0.96); border-bottom: 1px solid var(--border); padding: 14px 18px; }
-    h1 { margin: 0 0 6px; font-size: 22px; }
-    .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 12px; line-height: 1.35; }
-    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap: 8px; }
-    .metric { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; min-height: 62px; }
-    .metric-label { color: var(--muted); font-size: 11px; margin-bottom: 4px; }
-    .metric-value { font-size: 18px; font-weight: bold; }
-    .ok { color: var(--ok); } .warn { color: var(--warn); } .critical { color: var(--critical); } .info { color: var(--info); } .muted { color: var(--muted); }
-    main { padding: 18px; padding-bottom: 120px; }
-    .console-title { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
-    .feed { border: 1px solid var(--border); border-radius: 12px; background: var(--panel); padding: 12px; font-family: Consolas, Menlo, Monaco, monospace; font-size: 13px; line-height: 1.45; }
-    .entry { padding: 6px 0; border-bottom: 1px solid rgba(31, 41, 55, 0.65); word-break: break-word; }
-    .entry:last-child { border-bottom: none; }
-    .tag { display: inline-block; min-width: 92px; padding: 2px 7px; border-radius: 7px; border: 1px solid var(--border); background: var(--panel-2); font-weight: bold; margin-right: 8px; font-size: 11px; }
-    .time { color: var(--muted); font-size: 11px; margin-right: 8px; }
-  </style>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>SentinelEdge — Public Preview</title>
+  <link rel="stylesheet" href="./styles.css?v=3" />
 </head>
 <body>
-  <header>
-    <h1>SentinelEdge Auto-Scroll Preview</h1>
-    <div class="subtitle">Hands-free public demonstration. No mouse interaction required. All data is synthetic.</div>
-    <div class="metrics">
-      <div class="metric"><div class="metric-label">Connectivity</div><div class="metric-value ok" id="mConnectivity">ONLINE</div></div>
-      <div class="metric"><div class="metric-label">Pressure</div><div class="metric-value ok" id="mPressure">--</div></div>
-      <div class="metric"><div class="metric-label">Gas</div><div class="metric-value ok" id="mGas">--</div></div>
-      <div class="metric"><div class="metric-label">Temperature</div><div class="metric-value ok" id="mTemperature">--</div></div>
-      <div class="metric"><div class="metric-label">Vibration</div><div class="metric-value ok" id="mVibration">--</div></div>
-      <div class="metric"><div class="metric-label">Accepted</div><div class="metric-value ok" id="mAccepted">0</div></div>
-      <div class="metric"><div class="metric-label">Quarantined</div><div class="metric-value warn" id="mQuarantined">0</div></div>
-      <div class="metric"><div class="metric-label">Buffered</div><div class="metric-value info" id="mBuffered">0</div></div>
-      <div class="metric"><div class="metric-label">Active Alerts</div><div class="metric-value ok" id="mAlerts">0</div></div>
-      <div class="metric"><div class="metric-label">Open Incidents</div><div class="metric-value critical" id="mOpenIncidents">0</div></div>
-      <div class="metric"><div class="metric-label">Work Orders</div><div class="metric-value info" id="mWorkOrders">0</div></div>
-      <div class="metric"><div class="metric-label">Avg MTTR</div><div class="metric-value muted" id="mMTTR">0s</div></div>
-      <div class="metric"><div class="metric-label">Impacted Assets</div><div class="metric-value ok" id="mTwinImpacted">0</div></div>
-      <div class="metric"><div class="metric-label">Isolation Cands</div><div class="metric-value info" id="mTwinIsolation">0</div></div>
+  <header class="topbar">
+    <div>
+      <h1>SentinelEdge</h1>
+      <p>Hands-free industrial IoT safety, validation, rule, incident, storage, and digital-twin preview. Synthetic data only.</p>
     </div>
+    <div class="status-pill" id="systemMode">DEMO LIVE</div>
   </header>
-  <main>
-    <div class="console-title">Live output stream. The view automatically scrolls to the latest event.</div>
-    <div class="feed" id="feed"></div>
+
+  <section class="metrics" id="metrics">
+    <div class="metric"><span>Connectivity</span><strong id="mConnectivity">ONLINE</strong></div>
+    <div class="metric"><span>Pressure</span><strong id="mPressure">--</strong></div>
+    <div class="metric"><span>Gas</span><strong id="mGas">--</strong></div>
+    <div class="metric"><span>Temperature</span><strong id="mTemperature">--</strong></div>
+    <div class="metric"><span>Vibration</span><strong id="mVibration">--</strong></div>
+    <div class="metric"><span>Accepted</span><strong id="mAccepted">0</strong></div>
+    <div class="metric"><span>Quarantined</span><strong id="mQuarantined">0</strong></div>
+    <div class="metric"><span>Buffered</span><strong id="mBuffered">0</strong></div>
+    <div class="metric"><span>Active Alerts</span><strong id="mAlerts">0</strong></div>
+    <div class="metric"><span>Open Incidents</span><strong id="mOpenIncidents">0</strong></div>
+    <div class="metric"><span>Work Orders</span><strong id="mWorkOrders">0</strong></div>
+    <div class="metric"><span>Avg MTTR</span><strong id="mMTTR">0s</strong></div>
+    <div class="metric"><span>Rules Triggered</span><strong id="mRulesTriggered">0</strong></div>
+    <div class="metric"><span>Suppressed</span><strong id="mSuppressed">0</strong></div>
+    <div class="metric"><span>Hot Storage</span><strong id="mHot">0</strong></div>
+    <div class="metric"><span>Warm Storage</span><strong id="mWarm">0</strong></div>
+    <div class="metric"><span>Cold Storage</span><strong id="mCold">0</strong></div>
+    <div class="metric"><span>Twin Impact</span><strong id="mTwinImpact">0</strong></div>
+    <div class="metric"><span>Isolation</span><strong id="mIsolation">0</strong></div>
+  </section>
+
+  <main class="layout">
+    <section class="panel wide">
+      <div class="panel-title">Auto-Scrolling Operations Console</div>
+      <div class="feed" id="feed"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-title">Current Asset State</div>
+      <div class="asset-map">
+        <div class="asset" id="assetArea">Process Area 3</div>
+        <div class="asset" id="assetSep">Separator 2</div>
+        <div class="asset" id="assetComp">Compressor 1</div>
+        <div class="asset" id="assetFlare">Flare System</div>
+        <div class="asset" id="assetValve">ESDV-201</div>
+      </div>
+      <div class="panel-title mt">Layer Coverage</div>
+      <ul class="coverage">
+        <li>Telemetry ingestion</li><li>Validation/quarantine</li><li>Explainable rules</li><li>Maintenance suppression</li><li>Incident workflow</li><li>Storage tiering</li><li>Replay/backfill</li><li>Digital twin impact</li><li>Audit trail</li>
+      </ul>
+    </aside>
   </main>
-  <script>
-    const state = {
-      online: true, offlineUntil: 0, pressure: 82.0, gas: 2.0, temperature: 72.0, vibration: 2.1,
-      stuckPressure: false, accepted: 0, quarantined: 0, buffered: 0, tickCount: 0, maintenanceMode: false,
-      maintenanceUntil: 0, alerts: [], incidents: [], pending: [], incidentCounter: 0, workOrderCounter: 0,
-      openIncidents: 0, acknowledgedIncidents: 0, resolvedIncidents: 0, workOrders: 0, mttrTotalSeconds: 0, mttrCount: 0,
-      twinUpdates: 0, twinImpacted: 0, twinIsolation: 0, lastSignature: ''
-    };
-    let scrollPending = false;
-    function escapeHtml(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-    function timestamp(){return new Date().toISOString();}
-    function randomWalk(v,s,m=0,x=1000){return Math.max(m,Math.min(x,v+(Math.random()-0.5)*s));}
-    function addFeed(cat,cls,msg){
-      const f=document.getElementById('feed');const e=document.createElement('div');e.className='entry';
-      e.innerHTML='<span class="tag '+cls+'">'+escapeHtml(cat)+'</span><span class="time">'+timestamp()+'</span>'+escapeHtml(msg);
-      f.appendChild(e);while(f.children.length>350)f.removeChild(f.firstChild);scrollPending=true;
-    }
-    function maybeScroll(){if(scrollPending){window.scrollTo(0,document.body.scrollHeight);scrollPending=false;}}
-    function hasActiveAlert(c){return state.alerts.some(a=>a.category===c&&a.status==='active');}
-    function sevCls(s){return s==='critical'?'critical':s==='high'?'warn':'info';}
-    function scheduleTask(d,t){t.dueAt=Date.now()+d;state.pending.push(t);}
-    function hasOpenInc(c){return state.incidents.some(i=>i.category===c&&['created','escalated','acknowledged','work_order'].includes(i.status));}
-    
-    function addAlert(sev,cat,msg){
-      if(hasActiveAlert(cat))return;
-      const a={id:Math.random(),time:timestamp(),severity:sev,category:cat,message:msg,status:'active',expiresAt:Date.now()+12000};
-      state.alerts.unshift(a);state.alerts=state.alerts.slice(0,100);
-      addFeed('ALERT',sevCls(sev),sev.toUpperCase()+' | '+cat+' | '+msg);
-      if(sev==='critical'||sev==='high')scheduleTask(3000,{type:'createIncident',alert:a});
-    }
-    function addQuarantine(d,s,p,act){state.quarantined+=1;addFeed('VALIDATION','warn','Quarantined '+d+' | '+s+' | '+p);}
-    function addRule(r,c,o){addFeed('RULE','warn','Triggered '+r+' | '+c+' | '+o);}
-    function addRuleSup(r,c,reason){addFeed('RULE','info','Suppressed '+r+' | '+c+' | '+reason);}
-    
-    function createIncident(a){
-      if(hasOpenInc(a.category))return;
-      state.incidentCounter++;const id='INC-'+state.incidentCounter;
-      const i={id,category:a.category,message:a.message,severity:a.severity,status:'created',createdAt:Date.now()};
-      state.incidents.unshift(i);state.openIncidents++;
-      addFeed('INCIDENT','critical','Created '+id+' | '+a.category);
-      scheduleTask(2500,{type:'escalationCheck',id});scheduleTask(4000,{type:'acknowledgeIncident',id});
-      scheduleTask(6000,{type:'createWorkOrder',id});scheduleTask(12000,{type:'resolveIncident',id});
-    }
-    function escalationCheck(id){const i=state.incidents.find(x=>x.id===id);if(!i||i.status!=='created')return;i.status='escalated';addFeed('ESCALATION','warn',id+' not acknowledged within SLA | notifying supervisor');}
-    function acknowledgeIncident(id){const i=state.incidents.find(x=>x.id===id);if(!i||i.status==='acknowledged')return;i.status='acknowledged';state.acknowledgedIncidents++;addFeed('INCIDENT','ok','ACKNOWLEDGED '+id);}
-    function createWorkOrder(id){const i=state.incidents.find(x=>x.id===id);if(!i||i.status==='resolved')return;state.workOrderCounter++;state.workOrders++;i.status='work_order';addFeed('WORKORDER','info','WO-'+state.workOrderCounter+' created for '+id+' | maintenance dispatched');}
-    function resolveIncident(id){const i=state.incidents.find(x=>x.id===id);if(!i||i.status==='resolved')return;const d=Math.round((Date.now()-i.createdAt)/1000);i.status='resolved';state.openIncidents--;state.resolvedIncidents++;state.mttrTotalSeconds+=d;state.mttrCount++;addFeed('INCIDENT','ok','RESOLVED '+id+' | duration '+d+'s');}
-    
-    function processPending(now){
-      const due=[];state.pending=state.pending.filter(t=>{if(now>=t.dueAt){due.push(t);return false;}return true;});
-      due.forEach(t=>{
-        if(t.type==='createIncident')createIncident(t.alert);
-        else if(t.type==='escalationCheck')escalationCheck(t.id);
-        else if(t.type==='acknowledgeIncident')acknowledgeIncident(t.id);
-        else if(t.type==='createWorkOrder')createWorkOrder(t.id);
-        else if(t.type==='resolveIncident')resolveIncident(t.id);
-      });
-    }
-    
-    function evaluateRules(){
-      if(state.gas>=25&&!hasActiveAlert('gas_detection')){addRule('zone_gas_vote','2/3 detectors >=25% LEL','create critical alert');addAlert('critical','gas_detection','High gas concentration detected');}
-      if(state.pressure>=150){if(state.maintenanceMode){addRuleSup('pressure_high','pressure >= 150','maintenance active');}else if(!hasActiveAlert('pressure')){addRule('pressure_high','pressure >= 150','create high alert');addAlert('high','pressure','High pressure detected');}}
-      if(state.temperature>=120&&!hasActiveAlert('temperature')){addRule('temp_high','temp >= 120','create high alert');addAlert('high','temperature','High temp detected');}
-    }
-    
-    function evaluateTwin(){
-      state.twinUpdates++;
-      let impacted=[],isolation=[];
-      if(state.gas>=25||state.alerts.some(a=>a.category==='gas_detection'&&a.status==='active')){impacted.push('process-area-3','separator-2');isolation.push('ESDV-201');}
-      if(state.pressure>=150||state.alerts.some(a=>a.category==='pressure'&&a.status==='active')){impacted.push('separator-2','inlet-valve');isolation.push('PV-1042');}
-      impacted=[...new Set(impacted)];isolation=[...new Set(isolation)];
-      state.twinImpacted=impacted.length;state.twinIsolation=isolation.length;
-      const sig=state.online+'|'+impacted.join(',');
-      if(sig!==state.lastSignature){
-        state.lastSignature=sig;
-        if(!state.online)addFeed('TWIN','warn','Edge sync degraded | using last known good state');
-        else if(impacted.length>0)addFeed('TWIN','warn','Impact propagation | assets: '+impacted.join(', ')+' | isolation: '+isolation.join(', '));
-        else addFeed('TWIN','ok','Topology normal | no impact propagation');
-      }
-    }
-    
-    function updateMetrics(){
-      const setT=(id,v,c)=>{const el=document.getElementById(id);if(el){el.textContent=v;if(c)el.className='metric-value '+c;}};
-      setT('mConnectivity',state.online?'ONLINE':'OFFLINE',state.online?'ok':'critical');
-      setT('mPressure',state.pressure.toFixed(1)+' bar',state.pressure>=150?'critical':'ok');
-      setT('mGas',state.gas.toFixed(1)+' %LEL',state.gas>=25?'critical':state.gas>=10?'warn':'ok');
-      setT('mTemperature',state.temperature.toFixed(1)+' C',state.temperature>=120?'critical':'ok');
-      setT('mVibration',state.vibration.toFixed(2)+' mm/s',state.vibration>=8?'warn':'ok');
-      setT('mAccepted',state.accepted,'ok');setT('mQuarantined',state.quarantined,'warn');setT('mBuffered',state.buffered,'info');
-      setT('mOpenIncidents',state.openIncidents,state.openIncidents>0?'critical':'ok');
-      setT('mWorkOrders',state.workOrders,'info');
-      setT('mMTTR',state.mttrCount>0?Math.round(state.mttrTotalSeconds/state.mttrCount)+'s':'0s','muted');
-      setT('mTwinImpacted',state.twinImpacted,state.twinImpacted>0?'critical':'ok');
-      setT('mTwinIsolation',state.twinIsolation,state.twinIsolation>0?'warn':'info');
-      const aa=state.alerts.filter(a=>a.status==='active').length;setT('mAlerts',aa,aa>0?'critical':'ok');
-    }
-    
-    function tick(){
-      const now=Date.now();state.tickCount++;processPending(now);
-      state.alerts.forEach(a=>{if(a.status==='active'&&now>a.expiresAt)a.status='resolved';});
-      if(!state.online&&now>state.offlineUntil){state.online=true;state.buffered=0;addFeed('EDGE','ok','Network restored | Buffered messages replayed');}
-      if(state.online){
-        state.pressure=randomWalk(state.pressure,1.2,0,300);state.gas=randomWalk(state.gas,0.5,0,100);
-        state.temperature=randomWalk(state.temperature,1.0,0,200);state.vibration=randomWalk(state.vibration,0.3,0,20);
-        state.accepted+=4;
-        addFeed('TELEMETRY','info','PT-101='+state.pressure.toFixed(2)+' bar | GT-201='+state.gas.toFixed(2)+' %LEL | TT-301='+state.temperature.toFixed(2)+' C');
-        evaluateRules();evaluateTwin();
-      }else{
-        state.buffered+=5;addFeed('EDGE','warn','Offline buffering active | '+state.buffered+' messages');
-      }
-      updateMetrics();maybeScroll();
-    }
-    
-    const cycle=['normal','gasLeak','normal','pressureSpike','normal','networkOutage','restoreNetwork','badQuality','spoofAttempt'];
-    let ci=0;
-    function runNext(){
-      const s=cycle[ci];
-      if(s==='normal'){state.pressure=82;state.gas=2;state.temperature=72;addFeed('EDGE','info','Scenario: Normal operation');}
-      if(s==='gasLeak'){state.gas=35;addFeed('EDGE','info','Scenario: Gas leak injection');}
-      if(s==='pressureSpike'){state.pressure=180;addFeed('EDGE','info','Scenario: Pressure spike injection');}
-      if(s==='networkOutage'){state.online=false;state.offlineUntil=Date.now()+5000;addFeed('EDGE','warn','Scenario: Network outage');}
-      if(s==='restoreNetwork'){state.online=true;state.offlineUntil=0;addFeed('EDGE','ok','Scenario: Network restored');}
-      if(s==='badQuality'){addQuarantine('bad_quality','PT-101','quality=0','Rejected');}
-      if(s==='spoofAttempt'){addAlert('warning','security','Spoofed device rejected');addFeed('EDGE','info','Scenario: Spoof attempt');}
-      ci=(ci+1)%cycle.length;
-    }
-    
-    addFeed('SYSTEM','ok','SentinelEdge full preview initialized.');
-    updateMetrics();maybeScroll();
-    setInterval(tick,2000);setInterval(runNext,6500);
-  </script>
+
+  <footer>Public preview repository: sentinel-edge-preview. Private source repository: sentinel-edge.</footer>
+  <script src="./app.js?v=3"></script>
 </body>
 </html>
